@@ -28,17 +28,8 @@ class BaseRepository:
     async def create(
         self,
         data: Any,
-        condition: Any = False,
     ) -> Any:
         try:
-            result = await self.session.execute(select(self.model).where(condition))
-            existing_data = result.scalar_one_or_none()
-
-            if existing_data:
-                err = f"Attempt to create {self.log_data_name} failed: already exists."
-                logger.warning(err)
-                raise ValueError(err)
-
             self.session.add(data)
 
             await self.session.commit()
