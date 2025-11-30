@@ -4,6 +4,11 @@ from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.candidate import CandidateCreate, CandidateResponse
+from app.schemas.election_setting import (
+    ElectionSettingBase,
+    ElectionSettingResponse,
+)
+from app.schemas.attachment import AttachmentCreate, AttachmentResponse
 
 
 class ElectionBase(BaseModel):
@@ -17,7 +22,9 @@ class ElectionBase(BaseModel):
 
 class ElectionCreate(ElectionBase):
     """Schema for creating a new election."""
-    candidates: List[CandidateCreate] = Field(..., min_items=1, description="List of candidates for the election")
+    candidates: List[CandidateCreate] = Field(..., min_items=2, description="List of candidates for the election")
+    settings: Optional[ElectionSettingBase] = Field(None, description="Election settings")
+    attachments: Optional[List[AttachmentCreate]] = Field(None, description="List of PDF file attachments for the election")
 
 
 class ElectionUpdate(BaseModel):
@@ -27,7 +34,9 @@ class ElectionUpdate(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     is_public: Optional[bool] = None
-    candidates: Optional[List[CandidateCreate]] = Field(None, min_items=1, description="List of candidates for the election")
+    candidates: Optional[List[CandidateCreate]] = Field(None, min_items=2, description="List of candidates for the election")
+    settings: Optional[ElectionSettingBase] = Field(None, description="Election settings")
+    attachments: Optional[List[AttachmentCreate]] = Field(None, description="List of PDF file attachments for the election")
 
 
 class ElectionResponse(ElectionBase):
@@ -37,4 +46,6 @@ class ElectionResponse(ElectionBase):
     id: str
     created_at: Optional[datetime] = None
     candidates: List[CandidateResponse] = []
+    settings: Optional[ElectionSettingResponse] = None
+    attachments: List[AttachmentResponse] = []
 

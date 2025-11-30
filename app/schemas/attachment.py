@@ -1,12 +1,20 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class AttachmentBase(BaseModel):
     """Base schema for Attachment with common fields."""
     file_url: str = Field(..., min_length=1, description="URL of the attached file")
+    
+    @field_validator("file_url")
+    @classmethod
+    def validate_pdf_file(cls, v: str) -> str:
+        """Validate that the file URL points to a PDF file."""
+        if not v.lower().endswith(".pdf"):
+            raise ValueError("Only PDF files are allowed")
+        return v
 
 
 class AttachmentCreate(AttachmentBase):

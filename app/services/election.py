@@ -5,12 +5,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging_config import get_logger
 from app.exceptions.user import ValidationError, UserNotFoundError
+from app.models.attachment import Attachment
 from app.models.candidates import Candidate
 from app.models.election import Election
+from app.models.election_setting import ElectionSetting
+from app.repository.attachment_repository import AttachmentRepository
 from app.repository.candidate_repository import CandidateRepository
 from app.repository.election_repository import ElectionRepository
+from app.repository.election_setting_repository import ElectionSettingRepository
+from app.schemas.attachment import AttachmentResponse
 from app.schemas.candidate import CandidateResponse
 from app.schemas.election import ElectionCreate, ElectionUpdate, ElectionResponse
+from app.schemas.election_setting import ElectionSettingResponse
 
 logger = get_logger("election_service")
 
@@ -43,6 +49,24 @@ class ElectionService:
         created_election = await repository.create(new_election)
         logger.info(f"Election created successfully with id: {created_election.id}")
 
+        setting_repo = ElectionSettingRepository(session)
+        if election_data.settings:
+            new_setting = ElectionSetting(
+                election_id=created_election.id,
+                allow_revoting=election_data.settings.allow_revoting,
+                max_votes=election_data.settings.max_votes,
+                require_auth=election_data.settings.require_auth,
+            )
+        else:
+            new_setting = ElectionSetting(
+                election_id=created_election.id,
+                allow_revoting=True,
+                max_votes=1,
+                require_auth=True,
+            )
+        await setting_repo.create(new_setting)
+        logger.info(f"Created election settings for election {created_election.id}")
+
         candidate_repo = CandidateRepository(session)
 
         for candidate_data in election_data.candidates:
@@ -56,6 +80,19 @@ class ElectionService:
         logger.info(
             f"Created {len(election_data.candidates)} candidates for election {created_election.id}"
         )
+
+        if election_data.attachments:
+            attachment_repo = AttachmentRepository(session)
+            for attachment_data in election_data.attachments:
+                new_attachment = Attachment(
+                    election_id=created_election.id,
+                    file_url=attachment_data.file_url,
+                    uploaded_at=datetime.now(timezone.utc),
+                )
+                await attachment_repo.create(new_attachment)
+            logger.info(
+                f"Created {len(election_data.attachments)} attachments for election {created_election.id}"
+            )
 
         await session.refresh(created_election)
 
@@ -99,7 +136,7 @@ class ElectionService:
                 raise ValidationError("Election must have at least two candidates")
 
         update_dict = election_data.model_dump(
-            exclude_unset=True, exclude={"candidates"}
+            exclude_unset=True, exclude={"candidates", "settings", "attachments"}
         )
 
         if update_dict:
@@ -108,6 +145,28 @@ class ElectionService:
             )
         else:
             updated_election = election
+
+        if election_data.settings is not None:
+            setting_repo = ElectionSettingRepository(session)
+            existing_setting = await setting_repo.read_one(
+                condition=ElectionSetting.election_id == election_id
+            )
+
+            if existing_setting:
+                settings_dict = election_data.settings.model_dump(exclude_unset=True)
+                await setting_repo.update(
+                    data=settings_dict, condition=ElectionSetting.id == existing_setting.id
+                )
+                logger.info(f"Updated election settings for election {election_id}")
+            else:
+                new_setting = ElectionSetting(
+                    election_id=election_id,
+                    allow_revoting=election_data.settings.allow_revoting,
+                    max_votes=election_data.settings.max_votes,
+                    require_auth=election_data.settings.require_auth,
+                )
+                await setting_repo.create(new_setting)
+                logger.info(f"Created election settings for election {election_id}")
 
         if election_data.candidates is not None:
             candidate_repo = CandidateRepository(session)
@@ -129,6 +188,28 @@ class ElectionService:
 
             logger.info(
                 f"Updated candidates for election {election_id}: {len(election_data.candidates)} candidates"
+            )
+
+        if election_data.attachments is not None:
+            attachment_repo = AttachmentRepository(session)
+
+            existing_attachments = await attachment_repo.read_many(
+                condition=Attachment.election_id == election_id
+            )
+            if existing_attachments:
+                for attachment in existing_attachments:
+                    await attachment_repo.delete(condition=Attachment.id == attachment.id)
+
+            for attachment_data in election_data.attachments:
+                new_attachment = Attachment(
+                    election_id=election_id,
+                    file_url=attachment_data.file_url,
+                    uploaded_at=datetime.now(timezone.utc),
+                )
+                await attachment_repo.create(new_attachment)
+
+            logger.info(
+                f"Updated attachments for election {election_id}: {len(election_data.attachments)} attachments"
             )
 
         await session.refresh(updated_election)
@@ -178,8 +259,10 @@ class ElectionService:
     async def _build_election_response(
         session: AsyncSession, election: Election
     ) -> ElectionResponse:
-        """Build election response with candidates."""
+        """Build election response with candidates, settings, and attachments."""
         candidate_repo = CandidateRepository(session)
+        setting_repo = ElectionSettingRepository(session)
+        attachment_repo = AttachmentRepository(session)
 
         candidates = await candidate_repo.read_many(
             condition=Candidate.election_id == election.id
@@ -187,6 +270,20 @@ class ElectionService:
 
         candidate_responses = [
             CandidateResponse.model_validate(candidate) for candidate in candidates
+        ]
+
+        settings = await setting_repo.read_one(
+            condition=ElectionSetting.election_id == election.id
+        )
+        settings_response = (
+            ElectionSettingResponse.model_validate(settings) if settings else None
+        )
+
+        attachments = await attachment_repo.read_many(
+            condition=Attachment.election_id == election.id
+        )
+        attachment_responses = [
+            AttachmentResponse.model_validate(attachment) for attachment in attachments
         ]
 
         return ElectionResponse(
@@ -198,6 +295,8 @@ class ElectionService:
             is_public=election.is_public,
             created_at=election.created_at,
             candidates=candidate_responses,
+            settings=settings_response,
+            attachments=attachment_responses,
         )
 
 
