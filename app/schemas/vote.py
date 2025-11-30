@@ -11,9 +11,10 @@ class VoteBase(BaseModel):
     candidate_id: str
 
 
-class VoteCreate(VoteBase):
+class VoteCreate(BaseModel):
     """Schema for creating a new vote."""
-    pass
+    election_id: str
+    candidate_id: str
 
 
 class VoteUpdate(BaseModel):

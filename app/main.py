@@ -5,7 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.middleware import LoggingMiddleware, RequestContextMiddleware
 from app.core.logging_config import get_logger, setup_logging
 from app.core.settings import settings
+from app.routers.auth import router as auth_router
+from app.routers.election import router as election_router
 from app.routers.healthcheck import router as healthcheck_router
+from app.routers.user import router as user_router
+from app.routers.vote import router as vote_router
 
 setup_logging()
 logger = get_logger("app")
@@ -34,6 +38,10 @@ logger.info("Middleware configuration completed")
 api_router = APIRouter(prefix="/api/v1")
 
 api_router.include_router(healthcheck_router, prefix="/health")
+api_router.include_router(auth_router, prefix="/auth")
+api_router.include_router(election_router, prefix="/elections")
+api_router.include_router(vote_router, prefix="/votes")
+api_router.include_router(user_router, prefix="/users")
 
 app.include_router(api_router)
 
