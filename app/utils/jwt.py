@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import jwt
 from fastapi import Request
-from jwt import InvalidTokenError, PyJWKClient, PyJWTError
+from jwt import InvalidTokenError
 
 from app.core.logging_config import get_logger
 from app.core.settings import settings
@@ -16,7 +16,7 @@ logger = get_logger("jwt_utils")
 
 
 class JwtScenario(Enum):
-    AUTH0 = "auth0"
+    """JWT authentication scenarios."""
     AUTH_LOCAL = "auth_local"
 
 
@@ -126,76 +126,6 @@ def _decode_local_jwt(token: str, verify_exp: bool = True):
     return payload
 
 
-def _decode_auth0_jwt(token: str):
-    """
-    Decode an Auth0 signed JWT token.
-    """
-
-    jwks_url = f"https://{settings.auth0_settings.AUTH0_DOMAIN}/.well-known/jwks.json"
-
-    jwks_client = PyJWKClient(jwks_url)
-    signing_key = jwks_client.get_signing_key_from_jwt(token)
-    payload = jwt.decode(
-        token,
-        signing_key.key,
-        algorithms=[settings.auth0_settings.AUTH0_ALGORITHMS],
-        audience=settings.auth0_settings.AUTH0_AUDIENCE,
-        issuer=settings.auth0_settings.AUTH0_ISSUER,
-    )
-    return payload
-
-
-def decode_auth0_access_token(access_token: str) -> Dict[str, Any]:
-    """
-    Decode Auth0 access token and return the payload as dictionary.
-    """
-    try:
-        payload = _decode_auth0_jwt(access_token)
-        logger.info(
-            f"Successfully decoded Auth0 access token for subject: {payload.get('sub')}"
-        )
-        return payload
-    except PyJWTError as e:
-        logger.error(f"Failed to decode Auth0 access token: {str(e)}")
-        raise InvalidTokenError(f"Invalid Auth0 access token: {str(e)}")
-    except Exception as e:
-        logger.error(f"Unexpected error decoding Auth0 access token: {str(e)}")
-        raise
-
-
-def get_auth0_user_info(access_token: str):
-    """
-    Decode Auth0 access token and return Auth0IDTokenPayloadSchema.
-    """
-    from app.schemas.auth0 import Auth0IDTokenPayloadSchema
-
-    try:
-        payload = decode_auth0_access_token(access_token)
-
-        if "https://rxeo.io/email" in payload:
-            payload["email"] = payload["https://rxeo.io/email"]
-            logger.debug(
-                f"Mapped custom claim 'https://rxeo.io/email' to 'email': {payload['email']}"
-            )
-        if "iat" in payload and isinstance(payload["iat"], int):
-            payload["iat"] = payload["iat"]
-        if "exp" in payload and isinstance(payload["exp"], int):
-            payload["exp"] = payload["exp"]
-
-        user_info = Auth0IDTokenPayloadSchema(**payload)
-        logger.info(f"Extracted Auth0 user info for email: {user_info.email}")
-        return user_info
-
-    except ValueError as e:
-        logger.error(
-            f"Failed to parse Auth0 access token payload into schema: {str(e)}"
-        )
-        raise ValueError(f"Invalid Auth0 access token payload: {str(e)}")
-    except Exception as e:
-        logger.error(f"Unexpected error extracting Auth0 user info: {str(e)}")
-        raise
-
-
 def decode_jwt(
     scenario: JwtScenario, token: str, verify_exp: bool = True
 ) -> Optional[Dict[str, Any]]:
@@ -203,10 +133,11 @@ def decode_jwt(
     Decode a JWT token based on the scenario.
     """
 
-    if scenario == JwtScenario.AUTH0:
-        return _decode_auth0_jwt(token)
-    elif scenario == JwtScenario.AUTH_LOCAL:
+    if scenario == JwtScenario.AUTH_LOCAL:
         return _decode_local_jwt(token, verify_exp=verify_exp)
+    # Alternative variants: Auth0 scenario
+    # elif scenario == JwtScenario.AUTH0:
+    #     return _decode_auth0_jwt(token)
     else:
         raise InvalidTokenError("Unknown token method")
 
@@ -261,12 +192,9 @@ async def is_token_blacklisted(token: str) -> bool:
 
 
 def get_bearer_token(request: Request) -> dict:
-    auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split(" ")[1]
-        logger.debug(f"Token from Authorization header: {token[:50]}...")
-        return {"method": JwtScenario.AUTH0, "token": token}
-
+    """
+    Get token from request cookies.
+    """
     cookie_token = request.cookies.get("access_token")
     if cookie_token:
         logger.info(
@@ -275,6 +203,4 @@ def get_bearer_token(request: Request) -> dict:
         return {"method": JwtScenario.AUTH_LOCAL, "token": cookie_token}
 
     logger.warning(f"No token found. Cookies available: {list(request.cookies.keys())}")
-    raise TokenNotFoundError(
-        "Missing token (no Authorization header or access_token cookie)"
-    )
+    raise TokenNotFoundError("Missing token (no access_token cookie found)")
