@@ -37,6 +37,13 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
             process_time = time.time() - start_time
 
+            if response.status_code == 422:
+                logger.warning(
+                    f"Validation error - ID: {request_id} | "
+                    f"Status: 422 | "
+                    f"Processing time: {process_time:.4f}s"
+                )
+
             logger.info(
                 f"Request completed - ID: {request_id} | "
                 f"Status: {response.status_code} | "

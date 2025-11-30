@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -75,7 +75,7 @@ class AuthService:
             email=login_data.email,
             ip_address=ip_address,
             success=False,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
         )
 
         if not user:
@@ -177,8 +177,20 @@ class AuthService:
     @staticmethod
     def clear_tokens_in_cookies(response: Response) -> None:
         """Clear tokens from cookies."""
-        response.delete_cookie(key="access_token", samesite="lax")
-        response.delete_cookie(key="refresh_token", samesite="lax")
+        secure = settings.app_settings.APP_SECURE_COOKIES
+        
+        response.delete_cookie(
+            key="access_token",
+            httponly=True,
+            secure=secure,
+            samesite="lax"
+        )
+        response.delete_cookie(
+            key="refresh_token",
+            httponly=True,
+            secure=secure,
+            samesite="lax"
+        )
 
         logger.debug("Tokens cleared from cookies")
 

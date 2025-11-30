@@ -7,7 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logging_config import get_logger
 from app.exceptions.user import UserNotFoundError, UserAlreadyExistsError
 from app.models.user import User
+from app.models.user_profile import UserProfile
 from app.repository.user_repository import UserRepository
+from app.repository.user_profile_repository import UserProfileRepository
 from app.schemas.user import UserCreate, UserUpdate, UserResponse
 from app.utils.jwt import get_bearer_token, get_token_subject, JwtScenario
 from app.utils.password import hash_password
@@ -44,11 +46,22 @@ class UserService:
             password_hash=password_hash,
             first_name=user_data.first_name,
             last_name=user_data.last_name,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None),
         )
 
         created_user = await repository.create(new_user)
         logger.info(f"User created successfully with id: {created_user.id}")
+
+        profile_repo = UserProfileRepository(session)
+        new_profile = UserProfile(
+            user_id=created_user.id,
+            birth_date=None,
+            avatar_url=None,
+            address=None,
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None),
+        )
+        await profile_repo.create(new_profile)
+        logger.info(f"User profile created automatically for user: {created_user.id}")
 
         return UserResponse.model_validate(created_user)
 

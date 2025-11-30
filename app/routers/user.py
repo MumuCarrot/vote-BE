@@ -28,7 +28,7 @@ async def create_user(
     logger.info(f"User created successfully: {user.id}")
     
     return JSONResponse(
-        content=user.model_dump(), status_code=201
+        content=user.model_dump(mode='json'), status_code=201
     )
 
 
@@ -45,7 +45,7 @@ async def get_all_users(
 
     users = await user_service.get_all_users(session, page=page, page_size=page_size)
 
-    response_data = [user.model_dump() for user in users]
+    response_data = [user.model_dump(mode='json') for user in users]
     
     return JSONResponse(content=response_data)
 
@@ -67,7 +67,7 @@ async def get_user_by_id(
 
         raise UserNotFoundError(f"User with id {user_id} not found")
 
-    return JSONResponse(content=user.model_dump())
+    return JSONResponse(content=user.model_dump(mode='json'))
 
 
 @router.put("/{user_id}")
@@ -85,7 +85,7 @@ async def update_user(
 
     logger.info(f"User updated successfully: {user.id}")
     
-    return JSONResponse(content=user.model_dump())
+    return JSONResponse(content=user.model_dump(mode='json'))
 
 
 @router.delete("/{user_id}")

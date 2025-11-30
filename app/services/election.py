@@ -43,7 +43,7 @@ class ElectionService:
             start_date=election_data.start_date,
             end_date=election_data.end_date,
             is_public=election_data.is_public,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None),
         )
 
         created_election = await repository.create(new_election)
@@ -87,7 +87,7 @@ class ElectionService:
                 new_attachment = Attachment(
                     election_id=created_election.id,
                     file_url=attachment_data.file_url,
-                    uploaded_at=datetime.now(timezone.utc),
+                    uploaded_at=datetime.now(timezone.utc).replace(tzinfo=None),
                 )
                 await attachment_repo.create(new_attachment)
             logger.info(
@@ -204,7 +204,7 @@ class ElectionService:
                 new_attachment = Attachment(
                     election_id=election_id,
                     file_url=attachment_data.file_url,
-                    uploaded_at=datetime.now(timezone.utc),
+                    uploaded_at=datetime.now(timezone.utc).replace(tzinfo=None),
                 )
                 await attachment_repo.create(new_attachment)
 

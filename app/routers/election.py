@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging_config import get_logger
 from app.dependencies.database import get_db
+from app.dependencies.token import get_current_user
+from app.models.user import User
 from app.schemas.election import ElectionCreate, ElectionUpdate, ElectionResponse
 from app.services.election import election_service
 
@@ -16,19 +18,21 @@ logger = get_logger("election_router")
 @router.post("", status_code=201)
 async def create_election(
     election_data: ElectionCreate,
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db),
 ) -> JSONResponse:
     """
     Create a new election with candidates and settings.
+    Requires authentication.
     """
-    logger.info(f"Creating election: {election_data.title}")
+    logger.info(f"Creating election: {election_data.title} by user: {current_user.id}")
 
     election = await election_service.create_election(session, election_data)
 
     logger.info(f"Election created successfully: {election.id}")
     
     return JSONResponse(
-        content=election.model_dump(), status_code=201
+        content=election.model_dump(mode='json'), status_code=201
     )
 
 
@@ -47,7 +51,7 @@ async def get_all_elections(
         session, page=page, page_size=page_size
     )
 
-    response_data = [election.model_dump() for election in elections]
+    response_data = [election.model_dump(mode='json') for election in elections]
     
     return JSONResponse(content=response_data)
 
@@ -69,7 +73,7 @@ async def get_election_by_id(
 
         raise UserNotFoundError(f"Election with id {election_id} not found")
 
-    return JSONResponse(content=election.model_dump())
+    return JSONResponse(content=election.model_dump(mode='json'))
 
 
 @router.put("/{election_id}")
@@ -89,7 +93,7 @@ async def update_election(
 
     logger.info(f"Election updated successfully: {election.id}")
     
-    return JSONResponse(content=election.model_dump())
+    return JSONResponse(content=election.model_dump(mode='json'))
 
 
 @router.delete("/{election_id}")

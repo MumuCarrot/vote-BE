@@ -31,7 +31,7 @@ class VoteService:
             election_id=vote_data.election_id,
             voter_id=current_user.id,
             candidate_id=vote_data.candidate_id,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None),
         )
 
         created_vote = await repository.create(new_vote)

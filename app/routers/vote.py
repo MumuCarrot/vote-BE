@@ -33,7 +33,7 @@ async def create_vote(
     logger.info(f"Vote created successfully: {vote.id}")
     
     return JSONResponse(
-        content=vote.model_dump(), status_code=201
+        content=vote.model_dump(mode='json'), status_code=201
     )
 
 
@@ -50,7 +50,7 @@ async def get_all_votes(
 
     votes = await vote_service.get_all_votes(session, page=page, page_size=page_size)
 
-    response_data = [vote.model_dump() for vote in votes]
+    response_data = [vote.model_dump(mode='json') for vote in votes]
     
     return JSONResponse(content=response_data)
 
@@ -72,7 +72,7 @@ async def get_vote_by_id(
 
         raise VoteNotFoundError(f"Vote with id {vote_id} not found")
 
-    return JSONResponse(content=vote.model_dump())
+    return JSONResponse(content=vote.model_dump(mode='json'))
 
 
 @router.get("/election/{election_id}")
@@ -87,7 +87,7 @@ async def get_votes_by_election(
 
     votes = await vote_service.get_votes_by_election(session, election_id)
 
-    response_data = [vote.model_dump() for vote in votes]
+    response_data = [vote.model_dump(mode='json') for vote in votes]
     
     return JSONResponse(content=response_data)
 
@@ -104,7 +104,7 @@ async def get_votes_by_user(
 
     votes = await vote_service.get_votes_by_user(session, user_id)
 
-    response_data = [vote.model_dump() for vote in votes]
+    response_data = [vote.model_dump(mode='json') for vote in votes]
     
     return JSONResponse(content=response_data)
 
@@ -133,7 +133,7 @@ async def get_my_vote_for_election(
             f"Vote for election {election_id} by user {current_user.id} not found"
         )
 
-    return JSONResponse(content=vote.model_dump())
+    return JSONResponse(content=vote.model_dump(mode='json'))
 
 
 @router.put("/{vote_id}")
@@ -152,7 +152,7 @@ async def update_vote(
 
     logger.info(f"Vote updated successfully: {vote.id}")
     
-    return JSONResponse(content=vote.model_dump())
+    return JSONResponse(content=vote.model_dump(mode='json'))
 
 
 @router.delete("/{vote_id}")

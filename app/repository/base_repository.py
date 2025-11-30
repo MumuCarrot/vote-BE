@@ -156,7 +156,7 @@ class BaseRepository:
 
             if not data:
                 logger.warning(f"{self.log_data_name} not found.")
-                return None
+                return []
 
             return data
 
@@ -179,7 +179,7 @@ class BaseRepository:
 
             if not data:
                 logger.warning(f"{self.log_data_name} not found.")
-                return None
+                return []
 
             return data
 
