@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.middleware import LoggingMiddleware, RequestContextMiddleware
@@ -31,7 +31,11 @@ app.add_middleware(
 
 logger.info("Middleware configuration completed")
 
-app.include_router(healthcheck_router)
+api_router = APIRouter(prefix="/api/v1")
+
+api_router.include_router(healthcheck_router, prefix="/health")
+
+app.include_router(api_router)
 
 logger.info("Routers configuration completed")
 

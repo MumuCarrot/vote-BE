@@ -25,7 +25,7 @@ def healthcheck() -> JSONResponse:
     return JSONResponse(content=response_data)
 
 
-@router.get("/health/postgresql")
+@router.get("/postgresql")
 async def health_db():
     """
     PostgreSQL database health check endpoint.
@@ -45,7 +45,7 @@ async def health_db():
         return JSONResponse(content={"status": "error", "detail": str(e)})
 
 
-@router.get("/health/redis")
+@router.get("/redis")
 async def health_redis():
     """
     Redis database health check endpoint.

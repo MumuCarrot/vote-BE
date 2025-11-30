@@ -11,7 +11,7 @@ class CandidateBase(BaseModel):
 
 class CandidateCreate(CandidateBase):
     """Schema for creating a new candidate."""
-    election_id: str
+    pass
 
 
 class CandidateUpdate(BaseModel):

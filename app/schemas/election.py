@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.schemas.candidate import CandidateCreate, CandidateResponse
 
 
 class ElectionBase(BaseModel):
@@ -15,7 +17,7 @@ class ElectionBase(BaseModel):
 
 class ElectionCreate(ElectionBase):
     """Schema for creating a new election."""
-    pass
+    candidates: List[CandidateCreate] = Field(..., min_items=1, description="List of candidates for the election")
 
 
 class ElectionUpdate(BaseModel):
@@ -25,6 +27,7 @@ class ElectionUpdate(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     is_public: Optional[bool] = None
+    candidates: Optional[List[CandidateCreate]] = Field(None, min_items=1, description="List of candidates for the election")
 
 
 class ElectionResponse(ElectionBase):
@@ -33,4 +36,5 @@ class ElectionResponse(ElectionBase):
 
     id: str
     created_at: Optional[datetime] = None
+    candidates: List[CandidateResponse] = []
 

@@ -56,3 +56,10 @@ class VoteNotFoundError(HTTPException):
     def __init__(self, detail: str = "Vote not found"):
         super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
+
+class ValidationError(HTTPException):
+    """Exception raised when validation fails."""
+
+    def __init__(self, detail: str = "Validation error"):
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
+

@@ -28,7 +28,7 @@ class Election(IdMixin, Base):
 
     # Relationships
     settings: Mapped[Optional["ElectionSetting"]] = relationship("ElectionSetting", back_populates="election", uselist=False)
-    candidates: Mapped[list["Candidate"]] = relationship("Candidate", back_populates="election")
+    candidates: Mapped[list["Candidate"]] = relationship("Candidate", back_populates="election", cascade="all, delete-orphan")
     votes: Mapped[list["Vote"]] = relationship("Vote", back_populates="election")
     accesses: Mapped[list["ElectionAccess"]] = relationship("ElectionAccess", back_populates="election")
     results_cache: Mapped[Optional["ElectionResultsCache"]] = relationship("ElectionResultsCache", back_populates="election", uselist=False)
