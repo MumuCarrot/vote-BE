@@ -84,30 +84,12 @@ class AuthSettings(BaseSettings):
     )
 
 
-class Auth0Settings(BaseSettings):
-    AUTH0_DOMAIN: str = "your.domain.auth0.com"
-    AUTH0_CLIENT_ID: str = "your_client_id"
-    AUTH0_CLIENT_SECRET: str = "your_client_secret"
-    AUTH0_AUDIENCE: str = "https://your.api.audience"
-    AUTH0_ISSUER_URL: str = "https://your.domain.auth0.com/"
-    AUTH0_API_AUDIENCE: str = "https://your.api.audience"
-    AUTH0_ISSUER: str = "https://your.domain.auth0.com/"
-    AUTH0_ALGORITHMS: str = "RS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-
-    model_config = SettingsConfigDict(
-        env_file=".env", case_sensitive=False, extra="ignore"
-    )
-
-
 class Settings(BaseSettings):
     app_settings: AppSettings = AppSettings()
     database_settings: DatabaseSettings = DatabaseSettings()
     redis_settings: RedisSettings = RedisSettings()
     logging_settings: LoggingSettings = LoggingSettings()
     auth_settings: AuthSettings = AuthSettings()
-    auth0_settings: Auth0Settings = Auth0Settings()
 
 
 settings = Settings()
