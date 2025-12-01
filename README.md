@@ -317,31 +317,6 @@ Then edit the generated file in `migrations/versions/` to add your migration log
 - Create a new migration to fix issues instead of modifying old ones
 - Document complex migrations with comments in the migration file
 
-## Project Structure
-
-```
-vote-BE/
-├── app/
-│   ├── core/           # Core configuration and settings
-│   ├── db/             # Database configuration
-│   ├── dependencies/   # Dependency injection
-│   ├── exceptions/     # Custom exceptions
-│   ├── http/           # HTTP utilities
-│   ├── models/         # SQLAlchemy models
-│   ├── repository/     # Data access layer
-│   ├── routers/        # API routes
-│   ├── schemas/        # Pydantic schemas
-│   ├── services/       # Business logic
-│   ├── utils/          # Utility functions
-│   └── main.py         # Application entry point
-├── migrations/         # Alembic migrations
-│   ├── versions/       # Migration files
-│   └── env.py          # Alembic environment configuration
-├── alembic.ini         # Alembic configuration
-├── requirements.txt    # Python dependencies
-└── README.md          # This file
-```
-
 ## Development
 
 ### Running Tests
@@ -376,8 +351,4 @@ pre-commit install
 
 - Verify Redis is running: `redis-cli ping`
 - Check Redis host and port in `.env`
-
-## License
-
-[Add your license information here]
 
