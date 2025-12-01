@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey, Text, DateTime, Boolean
+from sqlalchemy import String, ForeignKey, Text, DateTime, Boolean, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -18,6 +18,13 @@ class Notification(IdMixin, Base):
     message: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=None, nullable=True)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    __table_args__ = (
+        Index('idx_notification_user_id', 'user_id'),
+        Index('idx_notification_is_read', 'is_read'),
+        Index('idx_notification_created_at', 'created_at'),
+        Index('idx_notification_user_read_created', 'user_id', 'is_read', 'created_at'),
+    )
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="notifications")

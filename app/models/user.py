@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import String, DateTime
+from sqlalchemy import String, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -28,6 +28,11 @@ class User(IdMixin, Base):
     first_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     last_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=None, nullable=True)
+
+    __table_args__ = (
+        Index('idx_user_phone', 'phone'),
+        Index('idx_user_created_at', 'created_at'),
+    )
 
     # Relationships
     profile: Mapped[Optional["UserProfile"]] = relationship("UserProfile", back_populates="user", uselist=False)

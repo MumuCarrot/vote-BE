@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -23,6 +23,12 @@ class UserRoleLink(IdMixin, Base):
         String(36),
         ForeignKey("user_roles.id"),
         nullable=False
+    )
+
+    __table_args__ = (
+        Index('idx_user_role_link_user_id', 'user_id'),
+        Index('idx_user_role_link_role_id', 'role_id'),
+        Index('idx_user_role_link_user_role', 'user_id', 'role_id'),
     )
 
     # Relationships

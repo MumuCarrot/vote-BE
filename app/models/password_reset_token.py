@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey, DateTime
+from sqlalchemy import String, ForeignKey, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -18,6 +18,11 @@ class PasswordResetToken(IdMixin, Base):
     token: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=None, nullable=True)
+
+    __table_args__ = (
+        Index('idx_password_reset_user_id', 'user_id'),
+        Index('idx_password_reset_expires_at', 'expires_at'),
+    )
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="password_reset_tokens")

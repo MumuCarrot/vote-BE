@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey, DateTime, Boolean
+from sqlalchemy import String, ForeignKey, DateTime, Boolean, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -19,6 +19,14 @@ class LoginAttempt(IdMixin, Base):
     ip_address: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     success: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     timestamp: Mapped[Optional[datetime]] = mapped_column(DateTime, default=None, nullable=True)
+
+    __table_args__ = (
+        Index('idx_login_attempt_user_id', 'user_id'),
+        Index('idx_login_attempt_email', 'email'),
+        Index('idx_login_attempt_timestamp', 'timestamp'),
+        Index('idx_login_attempt_success', 'success'),
+        Index('idx_login_attempt_email_timestamp', 'email', 'timestamp'),
+    )
 
     # Relationships
     user: Mapped[Optional["User"]] = relationship("User", back_populates="login_attempts")

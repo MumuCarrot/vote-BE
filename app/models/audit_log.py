@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey, DateTime
+from sqlalchemy import String, ForeignKey, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -19,6 +19,13 @@ class AuditLog(IdMixin, Base):
     entity_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     entity_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     timestamp: Mapped[Optional[datetime]] = mapped_column(DateTime, default=None, nullable=True)
+
+    __table_args__ = (
+        Index('idx_audit_log_user_id', 'user_id'),
+        Index('idx_audit_log_timestamp', 'timestamp'),
+        Index('idx_audit_log_action', 'action'),
+        Index('idx_audit_log_entity', 'entity_type', 'entity_id'),
+    )
 
     # Relationships
     user: Mapped[Optional["User"]] = relationship("User", back_populates="audit_logs")

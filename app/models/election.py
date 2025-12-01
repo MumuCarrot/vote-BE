@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import String, DateTime, Boolean, Text
+from sqlalchemy import String, DateTime, Boolean, Text, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -25,6 +25,14 @@ class Election(IdMixin, Base):
     end_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     is_public: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=None, nullable=True)
+
+    __table_args__ = (
+        Index('idx_election_start_date', 'start_date'),
+        Index('idx_election_end_date', 'end_date'),
+        Index('idx_election_is_public', 'is_public'),
+        Index('idx_election_created_at', 'created_at'),
+        Index('idx_election_dates', 'start_date', 'end_date'),
+    )
 
     # Relationships
     settings: Mapped[Optional["ElectionSetting"]] = relationship("ElectionSetting", back_populates="election", uselist=False)
