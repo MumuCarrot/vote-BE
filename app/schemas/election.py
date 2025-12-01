@@ -22,7 +22,7 @@ class ElectionBase(BaseModel):
 
 class ElectionCreate(ElectionBase):
     """Schema for creating a new election."""
-    candidates: List[CandidateCreate] = Field(..., min_items=2, description="List of candidates for the election")
+    candidates: List[CandidateCreate] = Field(..., min_length=2, description="List of candidates for the election")
     settings: Optional[ElectionSettingBase] = Field(None, description="Election settings")
     attachments: Optional[List[AttachmentCreate]] = Field(None, description="List of PDF file attachments for the election")
 
@@ -34,7 +34,7 @@ class ElectionUpdate(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     is_public: Optional[bool] = None
-    candidates: Optional[List[CandidateCreate]] = Field(None, min_items=2, description="List of candidates for the election")
+    candidates: Optional[List[CandidateCreate]] = Field(None, min_length=2, description="List of candidates for the election")
     settings: Optional[ElectionSettingBase] = Field(None, description="Election settings")
     attachments: Optional[List[AttachmentCreate]] = Field(None, description="List of PDF file attachments for the election")
 

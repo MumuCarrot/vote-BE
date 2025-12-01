@@ -28,7 +28,6 @@ class UserProfileService:
         """Create a new user profile."""
         logger.info(f"Creating user profile for user: {profile_data.user_id}")
 
-        # Check if user exists
         user_repo = UserRepository(session)
         user = await user_repo.read_one(condition=User.id == profile_data.user_id)
 
@@ -36,7 +35,6 @@ class UserProfileService:
             logger.warning(f"User with id {profile_data.user_id} not found")
             raise UserNotFoundError(f"User with id {profile_data.user_id} not found")
 
-        # Check if profile already exists
         repository = UserProfileRepository(session)
         existing_profile = await repository.read_one(
             condition=UserProfile.user_id == profile_data.user_id
