@@ -83,7 +83,7 @@ app.include_router(api_router)
 logger.info("Routers configuration completed")
 
 if __name__ == "__main__":
-    logger.info(f"Starting application on {settings.APP_HOST}:{settings.APP_PORT}")
+    logger.info(f"Starting application on {settings.app_settings.APP_HOST}:{settings.app_settings.APP_PORT}")
     uvicorn.run(
         "app.main:app",
         host=settings.app_settings.APP_HOST,
