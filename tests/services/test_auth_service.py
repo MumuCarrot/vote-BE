@@ -242,7 +242,7 @@ async def test_refresh_token_blacklisted(async_session_mock):
 async def test_logout_clears_tokens(async_session_mock):
     access_token = "access-token"
     request = _build_request_with_ip()
-    request._cookies = {"refresh_token": "refresh-token"}  # type: ignore[attr-defined]
+    request._cookies = {"refresh_token": "refresh-token"}
 
     with patch(
         "app.services.auth.blacklist_token",

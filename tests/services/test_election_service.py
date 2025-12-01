@@ -112,7 +112,6 @@ async def test_create_election_success(async_session_mock):
 @pytest.mark.asyncio
 async def test_create_election_not_enough_candidates(async_session_mock):
     now = datetime.now(timezone.utc).replace(tzinfo=None)
-    # Создаём модель ElectionCreate без валидации, чтобы обойти min_items=2
     election_data = ElectionCreate.model_construct(
         title="Test election",
         description="Desc",
@@ -160,7 +159,6 @@ async def test_update_election_not_found(async_session_mock):
 
 @pytest.mark.asyncio
 async def test_update_election_not_enough_candidates(async_session_mock):
-    # Аналогично, создаём ElectionUpdate без валидации с 1 кандидатом
     update_data = ElectionUpdate.model_construct(
         candidates=[CandidateCreate(name="Only", description=None)]
     )
