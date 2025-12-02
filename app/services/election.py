@@ -9,6 +9,7 @@ from app.models.attachment import Attachment
 from app.models.candidates import Candidate
 from app.models.election import Election
 from app.models.election_setting import ElectionSetting
+from app.models.user import User
 from app.repository.attachment_repository import AttachmentRepository
 from app.repository.candidate_repository import CandidateRepository
 from app.repository.election_repository import ElectionRepository
@@ -26,7 +27,9 @@ class ElectionService:
 
     @staticmethod
     async def create_election(
-        session: AsyncSession, election_data: ElectionCreate
+        session: AsyncSession,
+        election_data: ElectionCreate,
+        current_user: User,
     ) -> ElectionResponse:
         """Create a new election with candidates."""
         logger.info(f"Creating election: {election_data.title}")
@@ -44,6 +47,7 @@ class ElectionService:
             end_date=election_data.end_date,
             is_public=election_data.is_public,
             created_at=datetime.now(timezone.utc).replace(tzinfo=None),
+            owner_id=current_user.id,
         )
 
         created_election = await repository.create(new_election)
@@ -293,6 +297,7 @@ class ElectionService:
             start_date=election.start_date,
             end_date=election.end_date,
             is_public=election.is_public,
+            owner_id=election.owner_id,
             created_at=election.created_at,
             candidates=candidate_responses,
             settings=settings_response,

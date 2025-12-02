@@ -43,6 +43,7 @@ async def test_create_election_success(async_session_mock):
         end_date=election_data.end_date,
         is_public=election_data.is_public,
         created_at=now,
+        owner_id="user-id-1",
     )
 
     with patch(
@@ -101,7 +102,13 @@ async def test_create_election_success(async_session_mock):
 
         async_session_mock.refresh = AsyncMock()
 
-        result = await ElectionService.create_election(async_session_mock, election_data)
+        current_user = SimpleNamespace(id="user-id-1")
+
+        result = await ElectionService.create_election(
+            async_session_mock,
+            election_data,
+            current_user,
+        )
 
         assert result.id == created_election.id
         assert len(result.candidates) == 2
@@ -123,8 +130,14 @@ async def test_create_election_not_enough_candidates(async_session_mock):
         attachments=None,
     )
 
+    current_user = SimpleNamespace(id="user-id-1")
+
     with pytest.raises(ValidationError):
-        await ElectionService.create_election(async_session_mock, election_data)
+        await ElectionService.create_election(
+            async_session_mock,
+            election_data,
+            current_user,
+        )
 
 
 @pytest.mark.asyncio

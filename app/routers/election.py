@@ -27,7 +27,11 @@ async def create_election(
     """
     logger.info(f"Creating election: {election_data.title} by user: {current_user.id}")
 
-    election = await election_service.create_election(session, election_data)
+    election = await election_service.create_election(
+        session=session,
+        election_data=election_data,
+        current_user=current_user,
+    )
 
     logger.info(f"Election created successfully: {election.id}")
     

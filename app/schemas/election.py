@@ -44,6 +44,7 @@ class ElectionResponse(ElectionBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
+    owner_id: Optional[str] = None
     created_at: Optional[datetime] = None
     candidates: List[CandidateResponse] = []
     settings: Optional[ElectionSettingResponse] = None
